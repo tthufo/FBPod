@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'FBPod_Example' do
+  pod 'FBPod', :path => '../'
+
+  target 'FBPod_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
