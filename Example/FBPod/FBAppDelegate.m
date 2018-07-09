@@ -8,12 +8,26 @@
 
 #import "FBAppDelegate.h"
 
+#import "FB_Plugin.h"
+
 @implementation FBAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    [[FB_Plugin shareInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+    
+    [[FB_Plugin shareInstance] startLoginFacebookWithCompletion:^(NSString *responseString, id object, int errorCode, NSString *description, NSError *error) {
+        
+        NSLog(@"%@", responseString);
+        
+    }];
+    
     return YES;
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(id)annotation
+{
+    return [[FB_Plugin shareInstance] application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -35,6 +49,8 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
+    [[FB_Plugin shareInstance] applicationDidBecomeActive:application];
+    
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 

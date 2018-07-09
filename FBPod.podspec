@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+Simple FB plugin for personal use
                        DESC
 
   s.homepage         = 'https://github.com/tthufo/FBPod'
@@ -28,15 +28,14 @@ TODO: Add long description of the pod here.
   s.source           = { :git => 'https://github.com/tthufo/FBPod.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '8.0'
-
-  s.source_files = 'FBPod/Classes/**/*'
+  s.ios.deployment_target = '9.0'
   
-  # s.resource_bundles = {
-  #   'FBPod' => ['FBPod/Assets/*.png']
-  # }
-
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.source_files = 'FBPod/Classes'
+  
+  s.public_header_files = 'FBPod/Classes/*.h'
+  
+  s.dependency 'FBSDKCoreKit', '~> 4.4'
+  s.dependency 'FBSDKLoginKit', '~> 4.4'
+  s.dependency 'FBSDKShareKit', '~> 4.4'
+  s.dependency 'SVProgressHUD'
 end

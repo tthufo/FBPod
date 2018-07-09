@@ -1,0 +1,6 @@
+framework module FBPod {
+  umbrella header "FBPod-umbrella.h"
+
+  export *
+  module * { export * }
+}
