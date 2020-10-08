@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'FBPod'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'A short description of FBPod.'
 
 # This description is used to generate tags and improve search results.
@@ -34,8 +34,8 @@ Simple FB plugin for personal use
   
   s.public_header_files = 'FBPod/Classes/*.h'
   
-  s.dependency 'FBSDKCoreKit', '~> 4.4'
-  s.dependency 'FBSDKLoginKit', '~> 4.4'
-  s.dependency 'FBSDKShareKit', '~> 4.4'
+  s.dependency 'FBSDKCoreKit', '~> 8.0'
+  s.dependency 'FBSDKLoginKit', '~> 8.0'
+  s.dependency 'FBSDKShareKit', '~> 8.0'
   s.dependency 'SVProgressHUD'
 end

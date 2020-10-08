@@ -16,17 +16,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKShareButton.h"
+#import "TargetConditionals.h"
 
-#import "FBSDKCoreKit+Internal.h"
-#import "FBSDKShareDialog.h"
+#if !TARGET_OS_TV
+
+ #import "FBSDKShareButton.h"
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
+ #import "FBSDKShareDialog.h"
 
 @implementation FBSDKShareButton
 {
   FBSDKShareDialog *_dialog;
 }
 
-#pragma mark - Properties
+ #pragma mark - Properties
 
 - (id<FBSDKSharingContent>)shareContent
 {
@@ -39,7 +47,7 @@
   [self checkImplicitlyDisabled];
 }
 
-#pragma mark - FBSDKButtonImpressionTracking
+ #pragma mark - FBSDKButtonImpressionTracking
 
 - (NSDictionary *)analyticsParameters
 {
@@ -56,14 +64,18 @@
   return @"share";
 }
 
-#pragma mark - FBSDKButton
+ #pragma mark - FBSDKButton
 
 - (void)configureButton
 {
   NSString *title =
-  NSLocalizedStringWithDefaultValue(@"ShareButton.Share", @"FacebookSDK", [FBSDKInternalUtility bundleForStrings],
-                                    @"Share",
-                                    @"The label for FBSDKShareButton");
+  NSLocalizedStringWithDefaultValue(
+    @"ShareButton.Share",
+    @"FacebookSDK",
+    [FBSDKInternalUtility bundleForStrings],
+    @"Share",
+    @"The label for FBSDKShareButton"
+  );
 
   [self configureWithIcon:nil
                     title:title
@@ -79,7 +91,7 @@
   return ![_dialog canShow] || ![_dialog validateWithError:NULL];
 }
 
-#pragma mark - Helper Methods
+ #pragma mark - Helper Methods
 
 - (void)_share:(id)sender
 {
@@ -88,3 +100,5 @@
 }
 
 @end
+
+#endif

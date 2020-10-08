@@ -16,21 +16,32 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKSendButton.h"
+#import "TargetConditionals.h"
 
-#import "FBSDKCoreKit+Internal.h"
-#import "FBSDKMessageDialog.h"
-#import "FBSDKMessengerIcon.h"
+#if !TARGET_OS_TV
+
+ #import "FBSDKSendButton.h"
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
+ #import "FBSDKMessageDialog.h"
+ #import "FBSDKMessengerIcon.h"
 
 @interface FBSDKSendButton () <FBSDKButtonImpressionTracking>
 @end
 
+ #pragma clang diagnostic push
+ #pragma clang diagnostic ignored "-Wdeprecated-implementations"
 @implementation FBSDKSendButton
+ #pragma clang diagnostic pop
 {
   FBSDKMessageDialog *_dialog;
 }
 
-#pragma mark - Properties
+ #pragma mark - Properties
 
 - (id<FBSDKSharingContent>)shareContent
 {
@@ -43,7 +54,7 @@
   [self checkImplicitlyDisabled];
 }
 
-#pragma mark - FBSDKButtonImpressionTracking
+ #pragma mark - FBSDKButtonImpressionTracking
 
 - (NSDictionary *)analyticsParameters
 {
@@ -60,17 +71,21 @@
   return @"send";
 }
 
-#pragma mark - FBSDKButton
+ #pragma mark - FBSDKButton
 
 - (void)configureButton
 {
   NSString *title =
-  NSLocalizedStringWithDefaultValue(@"SendButton.Send", @"FacebookSDK", [FBSDKInternalUtility bundleForStrings],
-                                    @"Send",
-                                    @"The label for FBSDKSendButton");
+  NSLocalizedStringWithDefaultValue(
+    @"SendButton.Send",
+    @"FacebookSDK",
+    [FBSDKInternalUtility bundleForStrings],
+    @"Send",
+    @"The label for FBSDKSendButton"
+  );
 
-  UIColor *backgroundColor = [UIColor colorWithRed:0.0 green:132.0/255.0 blue:1.0 alpha:1.0];
-  UIColor *highlightedColor = [UIColor colorWithRed:0.0 green:111.0/255.0 blue:1.0 alpha:1.0];
+  UIColor *backgroundColor = [UIColor colorWithRed:0.0 green:132.0 / 255.0 blue:1.0 alpha:1.0];
+  UIColor *highlightedColor = [UIColor colorWithRed:0.0 green:111.0 / 255.0 blue:1.0 alpha:1.0];
 
   [self configureWithIcon:[[FBSDKMessengerIcon alloc] init]
                     title:title
@@ -83,15 +98,17 @@
 
 - (BOOL)isImplicitlyDisabled
 {
-  return ![_dialog canShow] || ![_dialog validateWithError:NULL];
+  return !_dialog.canShow || ![_dialog validateWithError:NULL];
 }
 
-#pragma mark - Helper Methods
+ #pragma mark - Helper Methods
 
 - (void)_share:(id)sender
 {
-  [self logTapEventWithEventName:FBSDKAppEventNameFBSDKSendButtonDidTap parameters:[self analyticsParameters]];
+  [self logTapEventWithEventName:FBSDKAppEventNameFBSDKSendButtonDidTap parameters:self.analyticsParameters];
   [_dialog show];
 }
 
 @end
+
+#endif

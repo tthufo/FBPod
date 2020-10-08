@@ -16,25 +16,34 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKGameRequestContent.h"
+#import "TargetConditionals.h"
 
-#import "FBSDKCoreKit+Internal.h"
-#import "FBSDKShareUtility.h"
+#if !TARGET_OS_TV
 
-#define FBSDK_APP_REQUEST_CONTENT_TO_KEY @"to"
-#define FBSDK_APP_REQUEST_CONTENT_MESSAGE_KEY @"message"
-#define FBSDK_APP_REQUEST_CONTENT_ACTION_TYPE_KEY @"actionType"
-#define FBSDK_APP_REQUEST_CONTENT_OBJECT_ID_KEY @"objectID"
-#define FBSDK_APP_REQUEST_CONTENT_FILTERS_KEY @"filters"
-#define FBSDK_APP_REQUEST_CONTENT_SUGGESTIONS_KEY @"suggestions"
-#define FBSDK_APP_REQUEST_CONTENT_DATA_KEY @"data"
-#define FBSDK_APP_REQUEST_CONTENT_TITLE_KEY @"title"
+ #import "FBSDKGameRequestContent.h"
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
+ #import "FBSDKShareConstants.h"
+ #import "FBSDKShareUtility.h"
+
+ #define FBSDK_APP_REQUEST_CONTENT_TO_KEY @"to"
+ #define FBSDK_APP_REQUEST_CONTENT_MESSAGE_KEY @"message"
+ #define FBSDK_APP_REQUEST_CONTENT_ACTION_TYPE_KEY @"actionType"
+ #define FBSDK_APP_REQUEST_CONTENT_OBJECT_ID_KEY @"objectID"
+ #define FBSDK_APP_REQUEST_CONTENT_FILTERS_KEY @"filters"
+ #define FBSDK_APP_REQUEST_CONTENT_SUGGESTIONS_KEY @"suggestions"
+ #define FBSDK_APP_REQUEST_CONTENT_DATA_KEY @"data"
+ #define FBSDK_APP_REQUEST_CONTENT_TITLE_KEY @"title"
 
 @implementation FBSDKGameRequestContent
 
-#pragma mark - Properties
+ #pragma mark - Properties
 
--(void)setRecipients:(NSArray *)recipients
+- (void)setRecipients:(NSArray *)recipients
 {
   [FBSDKShareUtility assertCollection:recipients ofClass:[NSString class] name:@"recipients"];
   if (![_recipients isEqual:recipients]) {
@@ -70,19 +79,103 @@
   self.recipients = to;
 }
 
-#pragma mark - Equality
+ #pragma mark - FBSDKSharingValidation
+
+- (BOOL)validateWithOptions:(FBSDKShareBridgeOptions)bridgeOptions error:(NSError *__autoreleasing *)errorRef
+{
+  if (![FBSDKShareUtility validateRequiredValue:_message name:@"message" error:errorRef]) {
+    return NO;
+  }
+  BOOL mustHaveobjectID = _actionType == FBSDKGameRequestActionTypeSend
+  || _actionType == FBSDKGameRequestActionTypeAskFor;
+  BOOL hasobjectID = _objectID.length > 0;
+  if (mustHaveobjectID ^ hasobjectID) {
+    if (errorRef != NULL) {
+      NSString *message = @"The objectID is required when the actionType is either send or askfor.";
+      *errorRef = [FBSDKError requiredArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                         name:@"objectID"
+                                                      message:message];
+    }
+    return NO;
+  }
+  BOOL hasTo = _recipients.count > 0;
+  BOOL hasFilters = _filters != FBSDKGameRequestFilterNone;
+  BOOL hasSuggestions = _recipientSuggestions.count > 0;
+  if (hasTo && hasFilters) {
+    if (errorRef != NULL) {
+      NSString *message = @"Cannot specify to and filters at the same time.";
+      *errorRef = [FBSDKError invalidArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                        name:@"recipients"
+                                                       value:_recipients
+                                                     message:message];
+    }
+    return NO;
+  }
+  if (hasTo && hasSuggestions) {
+    if (errorRef != NULL) {
+      NSString *message = @"Cannot specify to and suggestions at the same time.";
+      *errorRef = [FBSDKError invalidArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                        name:@"recipients"
+                                                       value:_recipients
+                                                     message:message];
+    }
+    return NO;
+  }
+
+  if (hasFilters && hasSuggestions) {
+    if (errorRef != NULL) {
+      NSString *message = @"Cannot specify filters and suggestions at the same time.";
+      *errorRef = [FBSDKError invalidArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                        name:@"recipientSuggestions"
+                                                       value:_recipientSuggestions
+                                                     message:message];
+    }
+    return NO;
+  }
+
+  if (_data.length > 255) {
+    if (errorRef != NULL) {
+      NSString *message = @"The data cannot be longer than 255 characters";
+      *errorRef = [FBSDKError invalidArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                        name:@"data"
+                                                       value:_data
+                                                     message:message];
+    }
+    return NO;
+  }
+
+  if (errorRef != NULL) {
+    *errorRef = nil;
+  }
+
+  return [FBSDKShareUtility validateArgumentWithName:@"actionType"
+                                               value:_actionType
+                                                isIn:@[@(FBSDKGameRequestActionTypeNone),
+                                                       @(FBSDKGameRequestActionTypeSend),
+                                                       @(FBSDKGameRequestActionTypeAskFor),
+                                                       @(FBSDKGameRequestActionTypeTurn)]
+                                               error:errorRef]
+  && [FBSDKShareUtility validateArgumentWithName:@"filters"
+                                           value:_filters
+                                            isIn:@[@(FBSDKGameRequestFilterNone),
+                                                   @(FBSDKGameRequestFilterAppUsers),
+                                                   @(FBSDKGameRequestFilterAppNonUsers)]
+                                           error:errorRef];
+}
+
+ #pragma mark - Equality
 
 - (NSUInteger)hash
 {
   NSUInteger subhashes[] = {
     [FBSDKMath hashWithInteger:_actionType],
-    [_data hash],
+    _data.hash,
     [FBSDKMath hashWithInteger:_filters],
-    [_message hash],
-    [_objectID hash],
-    [_recipientSuggestions hash],
-    [_title hash],
-    [_recipients hash],
+    _message.hash,
+    _objectID.hash,
+    _recipientSuggestions.hash,
+    _title.hash,
+    _recipients.hash,
   };
   return [FBSDKMath hashWithIntegerArray:subhashes count:sizeof(subhashes) / sizeof(subhashes[0])];
 }
@@ -100,25 +193,25 @@
 
 - (BOOL)isEqualToGameRequestContent:(FBSDKGameRequestContent *)content
 {
-  return (content &&
-          _actionType == content.actionType &&
-          _filters == content.filters &&
-          [FBSDKInternalUtility object:_data isEqualToObject:content.data] &&
-          [FBSDKInternalUtility object:_message isEqualToObject:content.message] &&
-          [FBSDKInternalUtility object:_objectID isEqualToObject:content.objectID] &&
-          [FBSDKInternalUtility object:_recipientSuggestions isEqualToObject:content.recipientSuggestions] &&
-          [FBSDKInternalUtility object:_title isEqualToObject:content.title] &&
-          [FBSDKInternalUtility object:_recipients isEqualToObject:content.recipients]);
+  return (content
+    && _actionType == content.actionType
+    && _filters == content.filters
+    && [FBSDKInternalUtility object:_data isEqualToObject:content.data]
+    && [FBSDKInternalUtility object:_message isEqualToObject:content.message]
+    && [FBSDKInternalUtility object:_objectID isEqualToObject:content.objectID]
+    && [FBSDKInternalUtility object:_recipientSuggestions isEqualToObject:content.recipientSuggestions]
+    && [FBSDKInternalUtility object:_title isEqualToObject:content.title]
+    && [FBSDKInternalUtility object:_recipients isEqualToObject:content.recipients]);
 }
 
-#pragma mark - NSCoding
+ #pragma mark - NSCoding
 
 + (BOOL)supportsSecureCoding
 {
   return YES;
 }
 
-- (id)initWithCoder:(NSCoder *)decoder
+- (instancetype)initWithCoder:(NSCoder *)decoder
 {
   if ((self = [self init])) {
     _actionType = [decoder decodeIntegerForKey:FBSDK_APP_REQUEST_CONTENT_ACTION_TYPE_KEY];
@@ -145,7 +238,7 @@
   [encoder encodeObject:_recipients forKey:FBSDK_APP_REQUEST_CONTENT_TO_KEY];
 }
 
-#pragma mark - NSCopying
+ #pragma mark - NSCopying
 
 - (id)copyWithZone:(NSZone *)zone
 {
@@ -162,3 +255,5 @@
 }
 
 @end
+
+#endif

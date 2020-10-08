@@ -16,10 +16,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKCameraEffectTextures.h"
+#import "TargetConditionals.h"
 
-#import "FBSDKCoreKit+Internal.h"
-#import "FBSDKShareUtility.h"
+#if !TARGET_OS_TV
+
+ #import "FBSDKCameraEffectTextures.h"
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
+ #import "FBSDKShareUtility.h"
 
 static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
 
@@ -28,7 +36,7 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
   NSMutableDictionary<NSString *, UIImage *> *_textures;
 }
 
-#pragma mark - Object Lifecycle
+ #pragma mark - Object Lifecycle
 
 - (instancetype)init
 {
@@ -53,11 +61,11 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
   return _textures;
 }
 
-#pragma mark - Equality
+ #pragma mark - Equality
 
 - (NSUInteger)hash
 {
-  return [_textures hash];
+  return _textures.hash;
 }
 
 - (BOOL)isEqual:(id)object
@@ -76,14 +84,14 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
   return [FBSDKInternalUtility object:_textures isEqualToObject:[object allTextures]];
 }
 
-#pragma mark - NSCoding
+ #pragma mark - NSCoding
 
 + (BOOL)supportsSecureCoding
 {
   return YES;
 }
 
-- (id)initWithCoder:(NSCoder *)decoder
+- (instancetype)initWithCoder:(NSCoder *)decoder
 {
   if ((self = [self init])) {
     _textures = [decoder decodeObjectOfClass:[NSMutableDictionary class]
@@ -97,7 +105,7 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
   [encoder encodeObject:_textures forKey:FBSDKCameraEffectTexturesTexturesKey];
 }
 
-#pragma mark - NSCopying
+ #pragma mark - NSCopying
 
 - (id)copyWithZone:(NSZone *)zone
 {
@@ -106,12 +114,12 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
   return copy;
 }
 
-#pragma mark - Helper Methods
+ #pragma mark - Helper Methods
 
 - (void)_setValue:(id)value forKey:(NSString *)key
 {
   if (value) {
-    _textures[key] = value;
+    [FBSDKTypeUtility dictionary:_textures setObject:value forKey:key];
   } else {
     [_textures removeObjectForKey:key];
   }
@@ -130,3 +138,5 @@ static NSString *const FBSDKCameraEffectTexturesTexturesKey = @"textures";
 }
 
 @end
+
+#endif

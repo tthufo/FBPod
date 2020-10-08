@@ -16,18 +16,30 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKGameRequestFrictionlessRecipientCache.h"
+#import "TargetConditionals.h"
 
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#if !TARGET_OS_TV
 
-#import "FBSDKCoreKit+Internal.h"
+ #import "FBSDKGameRequestFrictionlessRecipientCache.h"
+
+ #if defined BUCK || defined FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit.h>
+ #else
+@import FBSDKCoreKit;
+ #endif
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
 
 @implementation FBSDKGameRequestFrictionlessRecipientCache
 {
   NSSet *_recipientIDs;
 }
 
-#pragma mark - Object Lifecycle
+ #pragma mark - Object Lifecycle
 
 - (instancetype)init
 {
@@ -46,7 +58,7 @@
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-#pragma mark - Public API
+ #pragma mark - Public API
 
 - (BOOL)recipientsAreFrictionless:(id)recipients
 {
@@ -57,8 +69,13 @@
   if (!recipientIDArray && [recipients isKindOfClass:[NSString class]]) {
     recipientIDArray = [recipients componentsSeparatedByString:@","];
   }
-  NSSet *recipientIDs = [[NSSet alloc] initWithArray:recipientIDArray];
-  return [recipientIDs isSubsetOfSet:_recipientIDs];
+  if (recipientIDArray) {
+    NSSet *recipientIDs = [[NSSet alloc]
+                           initWithArray:recipientIDArray];
+    return [recipientIDs isSubsetOfSet:_recipientIDs];
+  } else {
+    return NO;
+  }
 }
 
 - (void)updateWithResults:(NSDictionary *)results
@@ -68,11 +85,11 @@
   }
 }
 
-#pragma mark - Helper Methods
+ #pragma mark - Helper Methods
 
 - (void)_accessTokenDidChangeNotification:(NSNotification *)notification
 {
-  if (![notification.userInfo[FBSDKAccessTokenDidChangeUserID] boolValue]) {
+  if (![notification.userInfo[FBSDKAccessTokenDidChangeUserIDKey] boolValue]) {
     return;
   }
   _recipientIDs = nil;
@@ -86,16 +103,18 @@
     return;
   }
   FBSDKGraphRequest *request = [[FBSDKGraphRequest alloc] initWithGraphPath:@"me/apprequestformerrecipients"
-                                                                 parameters:@{@"fields":@""}
-                                                                      flags:(FBSDKGraphRequestFlagDoNotInvalidateTokenOnError |
-                                                                             FBSDKGraphRequestFlagDisableErrorRecovery)];
+                                                                 parameters:@{@"fields" : @""}
+                                                                      flags:(FBSDKGraphRequestFlagDoNotInvalidateTokenOnError
+                                                                        | FBSDKGraphRequestFlagDisableErrorRecovery)];
   [request startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
     if (!error) {
       NSArray *items = [FBSDKTypeUtility arrayValue:result[@"data"]];
       NSArray *recipientIDs = [items valueForKey:@"recipient_id"];
-      _recipientIDs = [[NSSet alloc] initWithArray:recipientIDs];
+      self->_recipientIDs = [[NSSet alloc] initWithArray:recipientIDs];
     }
   }];
 }
 
 @end
+
+#endif

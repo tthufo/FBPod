@@ -59,8 +59,12 @@ static FB_Plugin * instance = nil;
     {
         FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
         
-        [login logInWithReadPermissions:@[] fromViewController:nil handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
-            
+//        [login logInWithPermissions:@[] fromViewController:nil handler:^(FBSDKLoginManagerLoginResult * _Nullable result, NSError * _Nullable error) {
+//            
+//        }];
+//        
+        [login logInWithPermissions:@[] fromViewController:nil handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+
             if (error)
             {
                 self->completionBlock(nil, nil, -1, error.localizedDescription, error);

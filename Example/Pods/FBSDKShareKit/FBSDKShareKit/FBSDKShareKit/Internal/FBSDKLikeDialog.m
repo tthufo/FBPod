@@ -16,21 +16,28 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKLikeDialog.h"
+#import "TargetConditionals.h"
 
-#import "FBSDKCoreKit+Internal.h"
-#import "FBSDKShareConstants.h"
-#import "FBSDKShareDefines.h"
-#import "FBSDKShareError.h"
+#if !TARGET_OS_TV
+
+ #import "FBSDKLikeDialog.h"
+
+ #ifdef FBSDKCOCOAPODS
+  #import <FBSDKCoreKit/FBSDKCoreKit+Internal.h>
+ #else
+  #import "FBSDKCoreKit+Internal.h"
+ #endif
+ #import "FBSDKShareConstants.h"
+ #import "FBSDKShareDefines.h"
 
 @implementation FBSDKLikeDialog
 
-#define FBSDK_LIKE_METHOD_MIN_VERSION @"20140410"
-#define FBSDK_LIKE_METHOD_NAME @"like"
-#define FBSDK_SHARE_RESULT_COMPLETION_GESTURE_VALUE_LIKE @"like"
-#define FBSDK_SHARE_RESULT_COMPLETION_GESTURE_VALUE_UNLIKE @"unlike"
+ #define FBSDK_LIKE_METHOD_MIN_VERSION @"20140410"
+ #define FBSDK_LIKE_METHOD_NAME @"like"
+ #define FBSDK_SHARE_RESULT_COMPLETION_GESTURE_VALUE_LIKE @"like"
+ #define FBSDK_SHARE_RESULT_COMPLETION_GESTURE_VALUE_UNLIKE @"unlike"
 
-#pragma mark - Class Methods
+ #pragma mark - Class Methods
 
 + (void)initialize
 {
@@ -51,7 +58,7 @@
   return dialog;
 }
 
-#pragma mark - Public Methods
+ #pragma mark - Public Methods
 
 - (BOOL)canLike
 {
@@ -62,8 +69,9 @@
 {
   NSError *error;
   if (![self canLike]) {
-    error = [FBSDKShareError errorWithCode:FBSDKShareDialogNotAvailableErrorCode
-                                   message:@"Like dialog is not available."];
+    error = [FBSDKError errorWithDomain:FBSDKShareErrorDomain
+                                   code:FBSDKShareErrorDialogNotAvailable
+                                message:@"Like dialog is not available."];
     [_delegate likeDialog:self didFailWithError:error];
     return NO;
   }
@@ -73,17 +81,17 @@
   }
 
   NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
-  [FBSDKInternalUtility dictionary:parameters setObject:self.objectID forKey:@"object_id"];
-  [FBSDKInternalUtility dictionary:parameters
-                         setObject:NSStringFromFBSDKLikeObjectType(self.objectType)
-                            forKey:@"object_type"];
-  FBSDKBridgeAPIRequest * webRequest = [FBSDKBridgeAPIRequest bridgeAPIRequestWithProtocolType:FBSDKBridgeAPIProtocolTypeWeb
-                                                                                        scheme:FBSDK_SHARE_JS_DIALOG_SCHEME
-                                                                                    methodName:FBSDK_LIKE_METHOD_NAME
-                                                                                 methodVersion:nil
-                                                                                    parameters:parameters
-                                                                                      userInfo:nil];
-  FBSDKBridgeAPICallbackBlock completionBlock = ^(FBSDKBridgeAPIResponse *response) {
+  [FBSDKTypeUtility dictionary:parameters setObject:self.objectID forKey:@"object_id"];
+  [FBSDKTypeUtility dictionary:parameters
+                     setObject:NSStringFromFBSDKLikeObjectType(self.objectType)
+                        forKey:@"object_type"];
+  FBSDKBridgeAPIRequest *webRequest = [FBSDKBridgeAPIRequest bridgeAPIRequestWithProtocolType:FBSDKBridgeAPIProtocolTypeWeb
+                                                                                       scheme:FBSDK_SHARE_JS_DIALOG_SCHEME
+                                                                                   methodName:FBSDK_LIKE_METHOD_NAME
+                                                                                methodVersion:nil
+                                                                                   parameters:parameters
+                                                                                     userInfo:nil];
+  FBSDKBridgeAPIResponseBlock completionBlock = ^(FBSDKBridgeAPIResponse *response) {
     [self _handleCompletionWithDialogResults:response.responseParameters error:response.error];
   };
 
@@ -97,24 +105,24 @@
                                                                                         parameters:parameters
                                                                                           userInfo:nil];
     void (^networkCompletionBlock)(FBSDKBridgeAPIResponse *) = ^(FBSDKBridgeAPIResponse *response) {
-      if (response.error.code == FBSDKAppVersionUnsupportedErrorCode) {
-        [[FBSDKApplicationDelegate sharedInstance] openBridgeAPIRequest:webRequest
-                                                useSafariViewController:useSafariViewController
-                                                     fromViewController:self.fromViewController
-                                                        completionBlock:completionBlock];
+      if (response.error.code == FBSDKErrorAppVersionUnsupported) {
+        [[FBSDKBridgeAPI sharedInstance] openBridgeAPIRequest:webRequest
+                                      useSafariViewController:useSafariViewController
+                                           fromViewController:self.fromViewController
+                                              completionBlock:completionBlock];
       } else {
         completionBlock(response);
       }
     };
-    [[FBSDKApplicationDelegate sharedInstance] openBridgeAPIRequest:nativeRequest
-                                            useSafariViewController:useSafariViewController
-                                                 fromViewController:self.fromViewController
-                                                    completionBlock:networkCompletionBlock];
+    [[FBSDKBridgeAPI sharedInstance] openBridgeAPIRequest:nativeRequest
+                                  useSafariViewController:useSafariViewController
+                                       fromViewController:self.fromViewController
+                                          completionBlock:networkCompletionBlock];
   } else {
-    [[FBSDKApplicationDelegate sharedInstance] openBridgeAPIRequest:webRequest
-                                            useSafariViewController:useSafariViewController
-                                                 fromViewController:self.fromViewController
-                                                    completionBlock:completionBlock];
+    [[FBSDKBridgeAPI sharedInstance] openBridgeAPIRequest:webRequest
+                                  useSafariViewController:useSafariViewController
+                                       fromViewController:self.fromViewController
+                                          completionBlock:completionBlock];
   }
 
   return YES;
@@ -122,9 +130,11 @@
 
 - (BOOL)validateWithError:(NSError *__autoreleasing *)errorRef
 {
-  if (![self.objectID length]) {
+  if (!self.objectID.length) {
     if (errorRef != NULL) {
-      *errorRef = [FBSDKShareError requiredArgumentErrorWithName:@"objectID" message:nil];
+      *errorRef = [FBSDKError requiredArgumentErrorWithDomain:FBSDKShareErrorDomain
+                                                         name:@"objectID"
+                                                      message:nil];
     }
     return NO;
   }
@@ -134,7 +144,7 @@
   return YES;
 }
 
-#pragma mark - Helper Methods
+ #pragma mark - Helper Methods
 
 - (BOOL)_canLikeNative
 {
@@ -157,3 +167,5 @@
 }
 
 @end
+
+#endif

@@ -18,10 +18,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import <FBSDKShareKit/FBSDKShareKit.h>
-
 #import "FBSDKShareDefines.h"
-#import "FBSDKShareError.h"
-#import "FBSDKShareOpenGraphValueContainer+Internal.h"
+#import "FBSDKShareKit.h"
 #import "FBSDKShareUtility.h"
 #import "FBSDKVideoUploader.h"

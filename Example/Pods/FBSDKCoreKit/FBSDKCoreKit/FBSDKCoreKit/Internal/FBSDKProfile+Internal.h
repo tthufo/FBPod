@@ -16,11 +16,21 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FBSDKProfile.h"
+#import "TargetConditionals.h"
 
-@interface FBSDKProfile(Internal)
+#if !TARGET_OS_TV
 
-+ (void)cacheProfile:(FBSDKProfile *) profile;
-+ (FBSDKProfile *)fetchCachedProfile;
+ #import "FBSDKProfile.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface FBSDKProfile (Internal)
+
++ (void)cacheProfile:(nullable FBSDKProfile *)profile;
++ (nullable FBSDKProfile *)fetchCachedProfile;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+#endif

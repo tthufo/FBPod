@@ -1,29 +1,30 @@
 PODS:
-  - Bolts (1.9.0):
-    - Bolts/AppLinks (= 1.9.0)
-    - Bolts/Tasks (= 1.9.0)
-  - Bolts/AppLinks (1.9.0):
-    - Bolts/Tasks
-  - Bolts/Tasks (1.9.0)
-  - FBPod (0.1.0):
-    - FBSDKCoreKit (~> 4.4)
-    - FBSDKLoginKit (~> 4.4)
-    - FBSDKShareKit (~> 4.4)
+  - FBPod (0.1.1):
+    - FBSDKCoreKit (~> 8.0)
+    - FBSDKLoginKit (~> 8.0)
+    - FBSDKShareKit (~> 8.0)
     - SVProgressHUD
-  - FBSDKCoreKit (4.34.0):
-    - Bolts (~> 1.7)
-  - FBSDKLoginKit (4.34.0):
-    - FBSDKCoreKit
-  - FBSDKShareKit (4.34.0):
-    - FBSDKCoreKit (~> 4.34.0)
+  - FBSDKCoreKit (8.0.0):
+    - FBSDKCoreKit/Basics (= 8.0.0)
+    - FBSDKCoreKit/Core (= 8.0.0)
+  - FBSDKCoreKit/Basics (8.0.0)
+  - FBSDKCoreKit/Core (8.0.0):
+    - FBSDKCoreKit/Basics
+  - FBSDKLoginKit (8.0.0):
+    - FBSDKLoginKit/Login (= 8.0.0)
+  - FBSDKLoginKit/Login (8.0.0):
+    - FBSDKCoreKit (~> 8.0.0)
+  - FBSDKShareKit (8.0.0):
+    - FBSDKShareKit/Share (= 8.0.0)
+  - FBSDKShareKit/Share (8.0.0):
+    - FBSDKCoreKit (~> 8.0.0)
   - SVProgressHUD (2.2.5)
 
 DEPENDENCIES:
   - FBPod (from `../`)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
-    - Bolts
+  trunk:
     - FBSDKCoreKit
     - FBSDKLoginKit
     - FBSDKShareKit
@@ -34,13 +35,12 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
-  FBPod: 00e9efd87a9073a6f93ca96d667ce6a1e37b4d05
-  FBSDKCoreKit: 0ff57f093b85c8c9d5aba697d3edf68a8960ce78
-  FBSDKLoginKit: 8c78f57a145afb756e4755e69195ebe08a42466e
-  FBSDKShareKit: 511d1dfc71204c0a8d69e6c5e3c964dcf0d4f3d9
+  FBPod: eade1494e86dd10ea3cd9cd7147dc65d2d7d0198
+  FBSDKCoreKit: 9d27fe97a2fa2abe5eeefea8240e837623ab88e0
+  FBSDKLoginKit: 2cbaf5405379731b22f2ebc224f7c30f62378171
+  FBSDKShareKit: bf3705fc42b660c3da9f15223db791b3c9c2acde
   SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
 
 PODFILE CHECKSUM: 2ef8646efd441cf8d4c9959f40abf60fb82cf487
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.9.2
